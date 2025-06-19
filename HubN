@@ -1,0 +1,359 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local playerGui = player:WaitForChild("PlayerGui")
+
+local TweenService = game:GetService("TweenService")
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "GuiComAbas"
+screenGui.Parent = playerGui
+
+local somClique = Instance.new("Sound")
+somClique.SoundId = "rbxassetid://911882271"
+somClique.Volume = 1
+somClique.Name = "Clique"
+somClique.Parent = screenGui
+
+local function tocarClique()
+    if somClique.IsPlaying then somClique:Stop() end
+    somClique:Play()
+end
+
+local function mostrarAviso(texto, duracao)
+    duracao = duracao or 2
+    local aviso = Instance.new("TextLabel")
+    aviso.Size = UDim2.new(0, 250, 0, 60)
+    aviso.Position = UDim2.new(0.5, -125, 0.5, -30)
+    aviso.BackgroundColor3 = Color3.new(0, 0, 0)
+    aviso.BackgroundTransparency = 0.5
+    aviso.TextColor3 = Color3.new(1, 1, 1)
+    aviso.Font = Enum.Font.SourceSansBold
+    aviso.TextSize = 24
+    aviso.Text = texto
+    aviso.TextWrapped = true
+    aviso.Parent = screenGui
+    aviso.ZIndex = 10
+
+    task.wait(duracao)
+    aviso:Destroy()
+end
+
+local framePrincipal = Instance.new("Frame")
+framePrincipal.Size = UDim2.new(0, 300, 0, 290)  -- maior pra caber o título e abas
+framePrincipal.Position = UDim2.new(0.5, -150, 0.5, -145)
+framePrincipal.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+framePrincipal.BorderSizePixel = 0 -- retirar borda padrão pra borda animada
+framePrincipal.Parent = screenGui
+
+-- Título NinjaHub no topo
+local titulo = Instance.new("TextLabel")
+titulo.Size = UDim2.new(1, 0, 0, 40)
+titulo.Position = UDim2.new(0, 0, 0, 0)
+titulo.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+titulo.TextColor3 = Color3.new(1, 1, 1)
+titulo.Font = Enum.Font.SourceSansBold
+titulo.TextSize = 26
+titulo.Text = "NinjaHub"
+titulo.Parent = framePrincipal
+
+-- Barra de abas abaixo do título
+local barraAbas = Instance.new("Frame")
+barraAbas.Size = UDim2.new(1, 0, 0, 40)
+barraAbas.Position = UDim2.new(0, 0, 0, 40)
+barraAbas.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+barraAbas.Parent = framePrincipal
+
+-- Borda animada verde-amarelo
+local stroke = Instance.new("UIStroke")
+stroke.Thickness = 4
+stroke.Parent = framePrincipal
+stroke.Color = Color3.fromRGB(0, 255, 0) -- começa verde
+
+local tweenInfo = TweenInfo.new(1.5, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1, true)
+local tween = TweenService:Create(stroke, tweenInfo, {Color = Color3.fromRGB(255, 255, 0)}) -- amarelo
+
+tween:Play()
+
+-- Botão mover ≡
+local botaoMover = Instance.new("TextButton")
+botaoMover.Size = UDim2.new(0, 30, 0, 30)
+botaoMover.Position = UDim2.new(0, 5, 0, 5)
+botaoMover.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+botaoMover.Text = "≡"
+botaoMover.TextColor3 = Color3.new(1, 1, 1)
+botaoMover.Font = Enum.Font.SourceSansBold
+botaoMover.TextSize = 24
+botaoMover.Parent = framePrincipal
+
+-- Botão X fechar
+local botaoFechar = Instance.new("TextButton")
+botaoFechar.Size = UDim2.new(0, 30, 0, 30)
+botaoFechar.Position = UDim2.new(1, -35, 0, 5)
+botaoFechar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+botaoFechar.Text = "X"
+botaoFechar.TextColor3 = Color3.new(1, 1, 1)
+botaoFechar.Font = Enum.Font.SourceSansBold
+botaoFechar.TextSize = 20
+botaoFechar.Parent = framePrincipal
+
+local botaoAtivar = Instance.new("TextButton")
+botaoAtivar.Size = UDim2.new(0, 120, 0, 40)
+botaoAtivar.Position = UDim2.new(1, -130, 1, -50)
+botaoAtivar.AnchorPoint = Vector2.new(0, 1)
+botaoAtivar.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+botaoAtivar.Text = "Ativar IU"
+botaoAtivar.TextColor3 = Color3.new(1, 1, 1)
+botaoAtivar.Font = Enum.Font.SourceSansBold
+botaoAtivar.TextSize = 18
+botaoAtivar.Visible = false
+botaoAtivar.Parent = screenGui
+
+botaoFechar.MouseButton1Click:Connect(function()
+    tocarClique()
+    framePrincipal.Visible = false
+    botaoAtivar.Visible = true
+end)
+
+botaoAtivar.MouseButton1Click:Connect(function()
+    tocarClique()
+    framePrincipal.Visible = true
+    botaoAtivar.Visible = false
+end)
+
+local function tornarArrastavel(guiFrame, botaoArrastar)
+    local dragging = false
+    local dragInput, mousePos, framePos
+
+    botaoArrastar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            mousePos = input.Position
+            framePos = guiFrame.Position
+
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    botaoArrastar.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            dragInput = input
+        end
+    end)
+
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if dragging and input == dragInput then
+            local delta = input.Position - mousePos
+            guiFrame.Position = UDim2.new(
+                framePos.X.Scale,
+                framePos.X.Offset + delta.X,
+                framePos.Y.Scale,
+                framePos.Y.Offset + delta.Y
+            )
+        end
+    end)
+end
+
+tornarArrastavel(framePrincipal, botaoMover)
+
+local abas = {}
+local framesAbas = {}
+local nomesAbas = {"Inicio", "Config", "Sobre"}
+
+for i, nome in ipairs(nomesAbas) do
+    local botaoAba = Instance.new("TextButton")
+    botaoAba.Size = UDim2.new(0, 100, 1, 0)
+    botaoAba.Position = UDim2.new((i - 1) * 0.33, 0, 0, 0)
+    botaoAba.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+    botaoAba.Text = nome
+    botaoAba.TextColor3 = Color3.new(1, 1, 1)
+    botaoAba.Font = Enum.Font.SourceSansBold
+    botaoAba.TextSize = 20
+    botaoAba.Parent = barraAbas
+
+    abas[i] = botaoAba
+
+    local frameAba = Instance.new("Frame")
+    frameAba.Size = UDim2.new(1, 0, 1, -80)  -- desconta título (40) + abas (40)
+    frameAba.Position = UDim2.new(0, 0, 0, 80) -- desce 80 pixels para ficar abaixo do título e da barra de abas
+    frameAba.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    frameAba.Visible = (i == 1)
+    frameAba.Parent = framePrincipal
+
+    framesAbas[i] = frameAba
+
+    botaoAba.MouseButton1Click:Connect(function()
+        tocarClique()
+        for j, f in ipairs(framesAbas) do
+            f.Visible = (j == i)
+        end
+        for j, b in ipairs(abas) do
+            b.BackgroundColor3 = (j == i) and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(0, 150, 0)
+        end
+    end)
+
+    if nome == "Inicio" then
+        local nomesBotoes = {"🌀Giro", "🧨Explosão", "🚪Sair da IU", "🔒Gigante"}
+        for k = 1, 4 do
+            local botao = Instance.new("TextButton")
+            botao.Size = UDim2.new(0.45, 0, 0.3, 0)
+            botao.Position = UDim2.new(0.05 + ((k - 1) % 2) * 0.5, 0, 0.1 + math.floor((k - 1) / 2) * 0.4, 0)
+            botao.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+            botao.Text = nomesBotoes[k]
+            botao.TextColor3 = Color3.new(1, 1, 1)
+            botao.Font = Enum.Font.SourceSansBold
+            botao.TextSize = 20
+            botao.Parent = frameAba
+
+            botao.MouseButton1Click:Connect(function()
+                tocarClique()
+                if k == 1 then
+                    local root = character:FindFirstChild("HumanoidRootPart")
+                    if root then
+                        for i = 1, 20 do
+                            root.CFrame *= CFrame.Angles(0, math.rad(18), 0)
+                            task.wait(0.02)
+                        end
+                    end
+                elseif k == 2 then
+                    local explosion = Instance.new("Explosion")
+                    explosion.Position = character:FindFirstChild("HumanoidRootPart").Position
+                    explosion.BlastRadius = 10
+                    explosion.BlastPressure = 500000
+                    explosion.Parent = workspace
+                elseif k == 3 then
+                    framePrincipal.Visible = false
+                    botaoAtivar.Visible = true
+                elseif k == 4 then
+                    local humanoid = character:FindFirstChildOfClass("Humanoid")
+                    local root = character:FindFirstChild("HumanoidRootPart")
+                    if humanoid and root then
+                        for _, part in pairs(character:GetChildren()) do
+                            if part:IsA("BasePart") then
+                                part.Size = part.Size * 3
+                            end
+                        end
+                        humanoid.HipHeight = humanoid.HipHeight * 3
+                    end
+                end
+            end)
+        end
+
+    elseif nome == "Config" then
+        local botaoVelocidade = Instance.new("TextButton")
+        botaoVelocidade.Size = UDim2.new(0.8, 0, 0, 40)
+        botaoVelocidade.Position = UDim2.new(0.1, 0, 0.2, 0)
+        botaoVelocidade.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        botaoVelocidade.Text = "⚡ Velocidade"
+        botaoVelocidade.TextColor3 = Color3.new(1, 1, 1)
+        botaoVelocidade.Font = Enum.Font.SourceSansBold
+        botaoVelocidade.TextSize = 22
+        botaoVelocidade.Parent = frameAba
+
+        botaoVelocidade.MouseButton1Click:Connect(function()
+            tocarClique()
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.WalkSpeed = 100
+                mostrarAviso("Velocidade ativada!", 2)
+            end
+        end)
+
+        local botaoPulo = Instance.new("TextButton")
+        botaoPulo.Size = UDim2.new(0.8, 0, 0, 40)
+        botaoPulo.Position = UDim2.new(0.1, 0, 0.6, 0)
+        botaoPulo.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
+        botaoPulo.Text = "🚀 Pulo Foguete"
+        botaoPulo.TextColor3 = Color3.new(1, 1, 1)
+        botaoPulo.Font = Enum.Font.SourceSansBold
+        botaoPulo.TextSize = 22
+        botaoPulo.Parent = frameAba
+
+        botaoPulo.MouseButton1Click:Connect(function()
+            tocarClique()
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.JumpPower = 200
+                mostrarAviso("Pulo foguete ativado!", 2)
+            end
+        end)
+
+    elseif nome == "Sobre" then
+        local textoCodigo = Instance.new("TextBox")
+        textoCodigo.Size = UDim2.new(0.8, 0, 0, 40)
+        textoCodigo.Position = UDim2.new(0.1, 0, 0.3, 0)
+        textoCodigo.PlaceholderText = "Digite o código aqui"
+        textoCodigo.TextColor3 = Color3.new(1, 1, 1)
+        textoCodigo.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        textoCodigo.Font = Enum.Font.SourceSansBold
+        textoCodigo.TextSize = 22
+        textoCodigo.ClearTextOnFocus = false
+        textoCodigo.Parent = frameAba
+
+        local botaoEnviar = Instance.new("TextButton")
+        botaoEnviar.Size = UDim2.new(0.8, 0, 0, 40)
+        botaoEnviar.Position = UDim2.new(0.1, 0, 0.65, 0)
+        botaoEnviar.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        botaoEnviar.Text = "Enviar Código"
+        botaoEnviar.TextColor3 = Color3.new(1, 1, 1)
+        botaoEnviar.Font = Enum.Font.SourceSansBold
+        botaoEnviar.TextSize = 22
+        botaoEnviar.Parent = frameAba
+
+        botaoEnviar.MouseButton1Click:Connect(function()
+            tocarClique()
+            local codigoDigitado = textoCodigo.Text
+            if codigoDigitado == "GA" then
+                mostrarAviso("Você acertou!", 2)
+                for _, part in pairs(character:GetChildren()) do
+                    if part:IsA("BasePart") then
+                        part.Color = Color3.fromRGB(20, 150, 100)
+                        part.Material = Enum.Material.SmoothPlastic
+                    end
+                end
+                local casco = Instance.new("Part")
+                casco.Size = Vector3.new(3, 1.5, 3)
+                casco.Shape = Enum.PartType.Ball
+                casco.Color = Color3.fromRGB(40, 100, 80)
+                casco.Material = Enum.Material.Metal
+                casco.CanCollide = false
+                casco.Anchored = false
+                casco.Name = "CascoTatuwolo"
+                casco.Parent = character
+
+                local weld = Instance.new("WeldConstraint")
+                weld.Part0 = casco
+                weld.Part1 = character:WaitForChild("HumanoidRootPart")
+                weld.Parent = casco
+                casco.CFrame = character.HumanoidRootPart.CFrame * CFrame.new(0, 0.5, 1)
+            else
+                mostrarAviso("Você errou!", 2)
+                local root = character:FindFirstChild("HumanoidRootPart")
+                if root then
+                    local explosion = Instance.new("Explosion")
+                    explosion.Position = root.Position
+                    explosion.BlastRadius = 10
+                    explosion.BlastPressure = 100000
+                    explosion.Parent = workspace
+                end
+            end
+        end)
+    end
+end
+
+local function monitorarMorte()
+    local humanoid = character:WaitForChild("Humanoid")
+    humanoid.Died:Connect(function()
+        framePrincipal.Visible = false
+        botaoAtivar.Visible = true
+    end)
+end
+
+monitorarMorte()
+player.CharacterAdded:Connect(function(newChar)
+    character = newChar
+    monitorarMorte()
+end)
